@@ -24,7 +24,27 @@
   </head> 
   <body bgcolor="white" height="100%" width="100%"> 
     <div id="debug"></div>
+        <div style="background-color:gray;padding:1%;">
+
+    <button type="button" style="background-color:#4CAF50;border:none;color:white;padding:1%; text-align:center;font-size:16px;z-index:5;" onclick="color('green');">Green</button>
+    <button type="button" style="background-color:#4CAF50;border:none;color:white;padding:1%; text-align:center;font-size:16px;z-index:5;" onclick="color('red');">Red</button>
+    <button type="button" style="background-color:#4CAF50;border:none;color:white;padding:1%; text-align:center;font-size:16px;z-index:5;" onclick="color('blue');">Blue</button>
+
+<!--     <input type="color" id='CF' style="background-color:#4CAF50;border:none;color:white;padding:0.75%; text-align:center;font-size:16px;z-index:5;" onchange="color(this.value);" value="#FFFFFF"> -->
+    <span style="text-align:right; margin: 25%;">
+ <!--    <button type="button" style="background-color:#4CAF50;border:none;color:white;padding:1%; text-align:center;font-size:16px;z-index:5;" onclick="clear_frame();">Clear Canvas</button> -->
+    </span>
+    <span style="text-align:right;">
+
+    <input type="number" style="background-color:#4CAF50;border:none;color:white;padding:1%; text-align:center;font-size:16px;z-index:5;" onchange="setNumber(this.value);" placeholder="Enter a Number">
+
+    </span>
+    </div>
+
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
+<!-- old styling options taken from last Assignent -->
+<!-- https://github.com/jejewittt/CMPUT404-assignment-ajax/blob/master/static/index.html -->
+
 
     <script>
       // Fix me
@@ -33,6 +53,8 @@ var host = window.location.host;
 var context = canvas.getContext("2d");
 var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
+var C = 'green';
+var circleSize = 1;
 var wscounter = 0;
 var socket;
 
@@ -125,10 +147,28 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+
+    var entity= "http://" + host + /entity/+ entity
+    fetch(entity, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers:{
+            'Content-Type':'application/json',
+            'Accept':'application/json'
+        }
+    }).then(response => {
+        // if(response.status ==200){
+            // console.log("response");
+            // console.log(response.json());
+        // }
+        return response.json();
+    }).then(response2 => {
+        response2;
+    });
 }
 var counter = 0;
 function addEntityWithoutName(data) {
-    var name = "X"+(counter++)%100;
+    var name = "X"+(counter++)%300;
     addEntity(name,data);
 }
 
@@ -230,17 +270,17 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
-mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
-});
+// mouse.mousedowners.push(function(x,y,clicked,e) {
+//     addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+// });
 
-mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
-});
+// mouse.mouseuppers.push(function(x,y,clicked,e) {
+//     addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+// });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':C,
+                          'radius':circleSize});
 });
 
 
@@ -253,15 +293,18 @@ function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
     socket = new WebSocket(url);
     socket.onopen = function() {
+
         //XXX: TODO What are you going to do here?
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
     };
     socket.onmessage = function(msg) {  
-        try {
+        try { 
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            world= JSON.parse(msg.data);
+           console.log(msg)       
+           console.log(msg.data)     
         } catch (e) {
             alert("socket on message: " + e);
         }
@@ -271,8 +314,14 @@ function wsSetup() {
 wsSetup();
 
 
-
-
+function color(col){
+    C = col;
+}
+function setNumber(num){
+    if (num > 0){
+        circleSize = num;
+    }
+}
 // 30 frames per second
 setInterval( update, 1000/30.0);
 
