@@ -19,7 +19,7 @@ pip install gunicorn
 Contributors / Licensing
 ========================
 
-Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle.
+Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle., and james jewitt
 
 freetests.py is LICENSE'D under a BSD-like license:
 
